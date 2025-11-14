@@ -7,7 +7,7 @@ namespace Unity.FPS.UI
 {
     public class LoadSceneButton : MonoBehaviour
     {
-        public string SceneName = "";
+        public string SceneName = "Mundo1_Selva";
 
         void Update()
         {
