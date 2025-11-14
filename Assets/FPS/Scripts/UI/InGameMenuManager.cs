@@ -11,7 +11,8 @@ namespace Unity.FPS.UI
         [Tooltip("Root GameObject of the menu used to toggle its activation")]
         public GameObject MenuRoot;
 
-        [Tooltip("Master volume when menu is open")] [Range(0.001f, 1f)]
+        [Tooltip("Master volume when menu is open")] 
+        [Range(0.001f, 1f)]
         public float VolumeWhenMenuOpen = 0.5f;
 
         [Tooltip("Slider component for look sensitivity")]
@@ -36,14 +37,8 @@ namespace Unity.FPS.UI
         void Start()
         {
             m_PlayerInputsHandler = FindObjectOfType<PlayerInputHandler>();
-            DebugUtility.HandleErrorIfNullFindObject<PlayerInputHandler, InGameMenuManager>(m_PlayerInputsHandler,
-                this);
-
             m_PlayerHealth = m_PlayerInputsHandler.GetComponent<Health>();
-            DebugUtility.HandleErrorIfNullGetComponent<Health, InGameMenuManager>(m_PlayerHealth, this, gameObject);
-
             m_FramerateCounter = FindObjectOfType<FramerateCounter>();
-            DebugUtility.HandleErrorIfNullFindObject<FramerateCounter, InGameMenuManager>(m_FramerateCounter, this);
 
             MenuRoot.SetActive(false);
 
@@ -62,7 +57,6 @@ namespace Unity.FPS.UI
 
         void Update()
         {
-            // Lock cursor when clicking outside of menu
             if (!MenuRoot.activeSelf && Input.GetMouseButtonDown(0))
             {
                 Cursor.lockState = CursorLockMode.Locked;
@@ -85,7 +79,6 @@ namespace Unity.FPS.UI
                 }
 
                 SetPauseMenuActivation(!MenuRoot.activeSelf);
-
             }
 
             if (Input.GetAxisRaw(GameConstants.k_AxisNameVertical) != 0)
@@ -123,7 +116,6 @@ namespace Unity.FPS.UI
                 Time.timeScale = 1f;
                 AudioUtility.SetMasterVolume(1);
             }
-
         }
 
         void OnMouseSensitivityChanged(float newValue)
