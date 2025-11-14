@@ -1,10 +1,15 @@
 ﻿using Unity.FPS.Game;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Unity.FPS.Gameplay
 {
     public class ObjectiveKillEnemies : Objective
     {
+        [Header("Configuración de transición")]
+        [Tooltip("Nombre de la escena que se cargará al completar este objetivo")]
+        public string nextSceneName = "Mundo3-Desierto";
+
         [Tooltip("Chose whether you need to kill every enemies or only a minimum amount")]
         public bool MustKillAllEnemies = true;
 
@@ -22,10 +27,8 @@ namespace Unity.FPS.Gameplay
 
             EventManager.AddListener<EnemyKillEvent>(OnEnemyKilled);
 
-            // set a title and description specific for this type of objective, if it hasn't one
             if (string.IsNullOrEmpty(Title))
-                Title = "Eliminate " + (MustKillAllEnemies ? "all the" : KillsToCompleteObjective.ToString()) +
-                        " enemies";
+                Title = "Eliminate " + (MustKillAllEnemies ? "all the" : KillsToCompleteObjective.ToString()) + " enemies";
 
             if (string.IsNullOrEmpty(Description))
                 Description = GetUpdatedCounterAmount();
@@ -41,34 +44,48 @@ namespace Unity.FPS.Gameplay
             if (MustKillAllEnemies)
                 KillsToCompleteObjective = evt.RemainingEnemyCount + m_KillTotal;
 
-            int targetRemaining = MustKillAllEnemies ? evt.RemainingEnemyCount : KillsToCompleteObjective - m_KillTotal;
+            int targetRemaining = MustKillAllEnemies ?
+                evt.RemainingEnemyCount :
+                KillsToCompleteObjective - m_KillTotal;
 
-            // update the objective text according to how many enemies remain to kill
+            // === cuando ya no hay enemigos ===
             if (targetRemaining == 0)
             {
-                CompleteObjective(string.Empty, GetUpdatedCounterAmount(), "Objective complete : " + Title);
-            }
-            else if (targetRemaining == 1)
-            {
-                string notificationText = NotificationEnemiesRemainingThreshold >= targetRemaining
-                    ? "One enemy left"
-                    : string.Empty;
-                UpdateObjective(string.Empty, GetUpdatedCounterAmount(), notificationText);
-            }
-            else
-            {
-                // create a notification text if needed, if it stays empty, the notification will not be created
-                string notificationText = NotificationEnemiesRemainingThreshold >= targetRemaining
-                    ? targetRemaining + " enemies to kill left"
-                    : string.Empty;
+                CompleteObjective(string.Empty, GetUpdatedCounterAmount(), "Objective complete: " + Title);
 
-                UpdateObjective(string.Empty, GetUpdatedCounterAmount(), notificationText);
+                // FORZAR CAMBIO DE ESCENA SIEMPRE
+                ForceLoadNextScene();
+                return;
             }
+
+            // notificaciones
+            string notificationText = "";
+            if (NotificationEnemiesRemainingThreshold >= targetRemaining)
+            {
+                notificationText = (targetRemaining == 1)
+                    ? "One enemy left"
+                    : targetRemaining + " enemies left";
+            }
+
+            UpdateObjective(string.Empty, GetUpdatedCounterAmount(), notificationText);
         }
 
         string GetUpdatedCounterAmount()
         {
             return m_KillTotal + " / " + KillsToCompleteObjective;
+        }
+
+        // CAMBIO DE ESCENA FORZADO (PARA QUE SIEMPRE FUNCIONE)
+        void ForceLoadNextScene()
+        {
+            if (string.IsNullOrEmpty(nextSceneName))
+            {
+                Debug.LogWarning("No se definió el nombre de la siguiente escena.");
+                return;
+            }
+
+            Debug.Log("Cargando siguiente escena forzada: " + nextSceneName);
+            SceneManager.LoadScene(nextSceneName);
         }
 
         void OnDestroy()
